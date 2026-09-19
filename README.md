@@ -10,7 +10,7 @@ Right-click a folder or empty space in the File Explorer to create a symbolic li
 
 Right-click a linked folder to access link-specific actions, including viewing its target, opening the target in your system file explorer, and safely removing the link without deleting the target.
 
-## Features## Features
+## Features
 
 - Create symbolic links from a folder or blank File Explorer space.
 - Choose the target with the native folder picker or enter an absolute path manually.
