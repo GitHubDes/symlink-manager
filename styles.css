@@ -1,0 +1,22 @@
+.symlink-manager-link-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-inline-start: 0.3em;
+  opacity: 0.72;
+  vertical-align: middle;
+}
+
+.symlink-manager-link-badge svg {
+  width: 0.85em;
+  height: 0.85em;
+}
+
+.symlink-manager-target-path {
+  user-select: text;
+  overflow-wrap: anywhere;
+  font-family: var(--font-monospace);
+}
+
+.symlink-manager-warning {
+  color: var(--text-warning);
+}

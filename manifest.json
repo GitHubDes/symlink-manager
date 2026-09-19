@@ -1,0 +1,9 @@
+{
+  "id": "symlink-manager",
+  "name": "Symlink Manager",
+  "version": "1.0.0",
+  "minAppVersion": "1.8.0",
+  "description": "Create and manage symbolic links and Windows junctions from the File Explorer.",
+  "author": "GitHubDes",
+  "isDesktopOnly": true
+}
