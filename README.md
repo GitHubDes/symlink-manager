@@ -2,7 +2,15 @@
 
 Symlink Manager adds safe symbolic-link management to the Obsidian File Explorer on desktop. On Windows it can also create directory junctions.
 
-## Features
+## Using Symlink Manager
+
+Symlink Manager works directly from the **right-click context menus in Obsidian's File Explorer**.
+
+Right-click a folder or empty space in the File Explorer to create a symbolic link or, on Windows, a directory junction.
+
+Right-click a linked folder to access link-specific actions, including viewing its target, opening the target in your system file explorer, and safely removing the link without deleting the target.
+
+## Features## Features
 
 - Create symbolic links from a folder or blank File Explorer space.
 - Choose the target with the native folder picker or enter an absolute path manually.
@@ -48,7 +56,7 @@ npm run build
 
 ## Development
 
-Symlink Manager was built with the assistance of **ChatGPT**, using a collaborative, iterative style of development often described as **vibe coding**. The plugin was designed, tested, refined, and validated through hands-on use in Obsidian, with ChatGPT assisting with implementation, debugging, documentation, and packaging.
+Symlink Manager was developed collaboratively with the assistance of ChatGPT. ChatGPT was used for implementation, debugging and documentation, while the plugin was iteratively tested and validated through hands-on use in Obsidian.
 
 ## License
 
