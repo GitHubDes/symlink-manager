@@ -1,28 +1,45 @@
-# Symlink Manager v5 testing
+# Symlink Manager 1.1.0 testing
 
-## Primary test — linked-tree participation
+## File-link creation
 
-1. Install v5 and reload Obsidian once.
-2. Create a symbolic link to a folder containing several Markdown files and subfolders.
-3. Confirm Obsidian reloads automatically after creation.
-4. Confirm the new linked folder appears without manual intervention.
-5. Open notes inside the linked folder from File Explorer.
-6. Search for text/tags contained only in the linked folder.
-7. Modify/add/delete a file in the target folder outside Obsidian and confirm Obsidian notices normally.
-8. Repeat with a Windows junction.
-9. Repeat with both a symlink and junction present together.
+1. Right-click a folder and choose **Create link here…**.
+2. Confirm **Target type** appears first and defaults to **Folder**.
+3. Select **File** and confirm Browse opens a file picker rather than a folder picker.
+4. Confirm the Windows Junction control is disabled for File targets.
+5. Create a file symlink from the picker and confirm Obsidian reloads after creation.
+6. Repeat by typing an absolute file path manually.
+7. With File selected, enter a folder path; confirm creation is blocked with `Target does not exist or inconsistent type.`
+8. With Folder selected, enter a file path; confirm the same validation message.
+9. Enter a nonexistent path; confirm the same validation message.
+10. Confirm duplicate destination names are still blocked.
 
-## Removal
+## File-link behaviour
 
-1. Use Remove link on a symlink and on a junction.
-2. Confirm Obsidian reloads automatically.
-3. Confirm the link disappears and the target folder/content remains untouched.
+1. Confirm the file symlink appears in Obsidian's File Explorer and receives the link decoration.
+2. Right-click the linked file and confirm **Show link target**, **Open target in default app**, and **Remove link…** appear.
+3. Confirm **Create link here…** does not appear on a file.
+4. Confirm **Open vault** does not appear on a file link.
+5. **Show link target** should report the resolved target file.
+6. **Open target in default app** should open the target file using the operating system default application.
+7. Open/edit the linked file normally in Obsidian and confirm changes affect the target file.
+8. Remove the link and confirm no reload occurs and the target file remains unchanged.
 
-## Regression
+## Folder/junction regression
 
-- Show link target.
-- Open target in system explorer.
-- Link decoration.
-- Vault detection.
-- Duplicate-name rejection.
-- Friendly EPERM/EACCES handling.
+1. Create a directory symbolic link and confirm existing behaviour remains unchanged.
+2. On Windows, create a junction and confirm existing behaviour remains unchanged.
+3. Confirm folder links still show **Create link here…**, Show/Open/Remove, and the **Open vault** when the target is a detected Obsidian vault.
+4. Confirm creation still reloads Obsidian and removal does not.
+5. Confirm link decoration works for both linked folders and linked files.
+6. Confirm friendly EPERM/EACCES handling still works.
+
+## Linked-vault behaviour
+
+1. Link a directory containing an `.obsidian` folder and confirm **Open vault** appears.
+2. Choose **Open vault** and confirm Obsidian opens or focuses the target vault while leaving the current vault open.
+3. From the parent vault, open and edit Markdown files inside the linked vault and confirm changes affect the real target files.
+4. Confirm files can be created, renamed, moved and copied through the linked tree as normal filesystem content.
+
+## Known Obsidian behaviour
+
+On the tested Windows setup, Markdown file symlinks render normally in Obsidian. Symlinks to some non-Markdown file types (for example PDF or image files) may be recognised by Obsidian but not rendered correctly; **Open target in default app** remains the appropriate fallback.

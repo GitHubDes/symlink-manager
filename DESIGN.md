@@ -1,6 +1,9 @@
-# Obsidian Symlink Manager
+# Obsidian Symlink Manager — Design Reference
 
 ## Project status
+
+This document describes the design as of release **1.1.0**. The shipped implementation supports directory symbolic links, file symbolic links, Windows directory junctions, and opening detected linked Obsidian vaults.
+
 
 Early design specification for a small Obsidian desktop plugin.
 
@@ -36,7 +39,7 @@ maintain its own database of symlinks.
 When the user right-clicks an ordinary folder in Obsidian's File
 Explorer, offer:
 
-**Create symlink here...**
+**Create link here…**
 
 Selecting it opens a small creation dialog containing:
 
@@ -75,7 +78,7 @@ vault.
 
 When the user right-clicks empty space in the File Explorer, offer:
 
-**Create symlink here...**
+**Create link here…**
 
 In this context, "here" means the current vault root.
 
@@ -124,16 +127,15 @@ following the target.
 
 ## Symlink context menu
 
-When a user right-clicks a symlinked directory, offer symlink-specific
-actions.
+When a user right-clicks a recognised linked directory or file, offer the actions appropriate to that link type.
 
 Initial menu:
 
--   **Create symlink here...**
--   **Show symlink target**
+-   **Create link here…**
+-   **Show link target**
 -   **Open target in system explorer**
--   **Remove symlink**
--   **Go to vault** --- only when simple vault detection succeeds
+-   **Remove link…**
+-   **Open vault** --- only when simple vault detection succeeds
 
 `Create symlink here...` remains valid on a symlinked folder: the
 destination is the directory represented by that folder.
@@ -162,10 +164,9 @@ No
 The first version need not become an elaborate properties system; the
 important information is the target path and whether it exists.
 
-### Open target in system explorer
+### Open targets
 
-Open the resolved target directory using the operating system's normal
-file manager.
+Directory targets can be revealed/opened in the operating system file manager. File targets can be opened with their operating-system default application.
 
 ### Remove symlink
 
@@ -212,7 +213,7 @@ This is therefore a **design objective, not a v1 dependency**.
 Do not make the core plugin brittle merely to achieve it. If
 accomplishing this requires unsafe monkey-patching or fragile dependence
 on Obsidian internals, leave Obsidian's Delete untouched and retain the
-explicit **Remove symlink** command.
+explicit **Remove link…** command.
 
 ## Vault detection
 
@@ -245,17 +246,9 @@ else:
     target is an ordinary linked directory
 ```
 
-### Go to vault
+### Open vault
 
-If the symlink target passes the simple `.obsidian` test, add:
-
-**Go to vault**
-
-to its context menu.
-
-The intent is to switch/open that directory as an Obsidian vault. The
-exact supported mechanism for opening/switching vaults should be
-confirmed during implementation.
+If a linked directory target passes the simple `.obsidian` test, add **Open vault** to its context menu. The implemented desktop action asks Obsidian to open or focus the target vault and deliberately leaves the current vault open.
 
 This supports the useful workflow of having an overview vault containing
 symlinks to several independent vaults: work globally through the
@@ -271,7 +264,7 @@ supported.
 
 An ordinary folder should gain:
 
-**Create symlink here...**
+**Create link here…**
 
 A symlinked folder gains the symlink-specific commands described above.
 
@@ -279,7 +272,7 @@ A symlinked folder gains the symlink-specific commands described above.
 
 The desired interaction is:
 
-Right-click empty File Explorer space -\> **Create symlink here...** -\>
+Right-click empty File Explorer space -\> **Create link here…** -\>
 create in vault root.
 
 Obsidian itself already provides a context menu in this area. Existing
@@ -380,25 +373,25 @@ The useful additions are:
 -   target inspection;
 -   safe, explicit link removal;
 -   opening the target in the system file manager;
--   convenient "Go to vault" when the target is plainly an Obsidian
+-   convenient "Open vault" when the target is plainly an Obsidian
     vault.
 
-## Proposed v1 feature set
+## Implemented feature set
 
-A successful first version consists of:
+The current 1.1.0 release provides:
 
-1.  **Create symlink here...** on folder context menus.
-2.  **Create symlink here...** on empty File Explorer space, targeting
+1.  **Create link here…** on folder context menus.
+2.  **Create link here…** on empty File Explorer space, targeting
     vault root.
-3.  Target directory picker.
-4.  Link name defaulting to the target directory name.
-5.  Visual link indicator for symlinked folders.
-6.  **Show symlink target**.
+3.  Folder/file target selection with native target picker.
+4.  Link name defaulting from the selected target.
+5.  Visual link indicator for recognised linked folders and files.
+6.  **Show link target**.
 7.  **Open target in system explorer**.
-8.  **Remove symlink**, with immediate filesystem verification and
+8.  **Remove link…**, with immediate filesystem verification and
     explicit safe wording.
 9.  Simple `.obsidian` vault detection.
-10. **Go to vault** for detected vault targets.
+10. **Open vault** for detected linked-vault targets.
 11. Optional Command Palette root-create command.
 12. Delete interception/suppression investigated as a non-blocking
     design objective.
@@ -425,7 +418,7 @@ These rules should remain true regardless of later features:
 
 -   The filesystem is authoritative.
 -   Never recursively delete a symlink target.
--   Immediately before **Remove symlink**, verify that the path itself
+-   Immediately before **Remove link…**, verify that the path itself
     is still a symbolic link.
 -   If verification fails, abort.
 -   Never convert a failed symlink operation into a copy/move operation.
@@ -441,10 +434,8 @@ Only consider these after the small v1 is working:
 -   Improve/delete-menu integration if a clean mechanism is found.
 -   Additional visual styles for broken symlinks.
 -   Detect and indicate missing targets.
--   Support file symlinks as well as directory symlinks, if useful.
--   Optional Windows junction support.
 -   More robust vault detection.
--   Additional "open in vault" behaviours.
+-   Additional linked-vault behaviours where they solve a demonstrated need.
 -   Settings only where real user needs emerge.
 
 Avoid adding features merely because they are possible.

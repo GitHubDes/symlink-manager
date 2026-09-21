@@ -1,15 +1,25 @@
 # Changelog
 
-## development-v8 — Go to vault
+## 1.1.0
 
-- Enable **Go to vault** for directory links whose target contains an Obsidian `.obsidian` directory.
-- Ask Obsidian to open/focus the target vault using its desktop `vault-open` IPC mechanism. The current vault is left open; Symlink Manager does not manage vault-window closure.
+- Added symbolic links to individual files as well as directories.
+- Added a Folder/File target selector with native folder and file pickers.
+- Added **Open vault** for linked directories that are detected as Obsidian vaults; Obsidian opens or focuses the target vault and leaves the current vault open.
+- Added **Open target in default app** for linked files.
+- Improved link detection, File Explorer decoration and refresh behaviour.
+- Windows junction creation remains directory-only.
+- Expanded README documentation for linked-vault workflows, Markdown file symlinks and known Obsidian behaviour.
+
 
 ## 1.0.0
 
 First public release, promoted from the tested v6 codebase. Creation currently reloads Obsidian to register the linked tree; removal does not reload.
 
-## development-v7 — file symlink support
+## Development history
+
+The sections below preserve implementation and test notes from the development cycle.
+
+### development-v7 — file symlink support
 
 Extend the existing shared link-creation path so Symlink Manager can create symbolic links to individual files as well as directories. The two existing creation entry points — right-clicking a folder and right-clicking empty File Explorer space — should continue to use the same creation UI and common creation function.
 
@@ -41,7 +51,7 @@ This should extend the existing creation architecture rather than introduce a se
 
 # Changes for v3
 
-## Primary fix under test — File Explorer refresh
+### Primary fix under test — File Explorer refresh
 
 The remaining v2 show-stopper is that a successfully created symlink or junction can exist on disk without appearing immediately in Obsidian's File Explorer.
 
@@ -57,18 +67,18 @@ The v3 refresh strategy is:
 
 The filesystem creation remains successful even if Obsidian does not immediately register the new link.
 
-## TODO — Go to Vault
+### TODO — Open vault
 
-The disabled **Go to vault (coming later)** item remains deferred. A future implementation must identify the target by physical path rather than vault name, because vault names are not unique. It must not write into the target and must work with read-only targets.
+The disabled **Open vault (coming later)** item remains deferred. A future implementation must identify the target by physical path rather than vault name, because vault names are not unique. It must not write into the target and must work with read-only targets.
 
-## v4 — linked-tree integration
+### v4 — linked-tree integration
 
 - v3 fixed immediate File Explorer appearance after link creation.
 - v4 extends the encapsulated refresh layer so a newly-created linked directory is recursively populated into Obsidian and then registered with Obsidian's recursive desktop watcher (`watchHiddenRecursive`) when that internal helper is available.
 - The core link-management code remains unchanged; undocumented Obsidian integration stays isolated in `refresh.ts`.
 - Goal: files and subfolders beneath a newly-created symlink/junction should participate in normal Obsidian refresh, metadata, search/indexing and filesystem change handling without restarting the vault.
 
-## v4 test result / v5 direction
+### v4 test result / v5 direction
 
 ### Linked-tree participation remains the blocker
 
@@ -90,7 +100,7 @@ Target sequence:
 
 A full application restart should not be the intended mechanism if the same-vault reload can achieve the required rescan.
 
-## v5 implementation
+### v5 implementation
 
 - Removed the v3/v4 reconciliation and recursive-watcher experiments from `refresh.ts`.
 - After a successful create or remove, v5 now invokes Obsidian's own `app:reload` command so the current vault is rediscovered by the normal startup path.
@@ -99,13 +109,13 @@ A full application restart should not be the intended mechanism if the same-vaul
 - The reload implementation remains encapsulated in `refresh.ts`.
 - Primary v5 test: after creation/reload, the linked tree must participate normally in Explorer updates, metadata/search and external filesystem changes.
 
-## v5 test result — passed
+### v5 test result — passed
 
 - Automatic reload after link creation works and causes the linked symlink/junction tree to participate normally in Obsidian.
 - Reloading is therefore the deliberate v5 refresh mechanism, replacing the unsuccessful v3/v4 reconciliation and watcher experiments.
 - Testing also exposed Obsidian's own duplicate/overlapping-link behaviour: when the same vault/directory is linked into multiple places, or link targets overlap, Obsidian may hide/suppress later duplicate linked trees. This is not a Symlink Manager refresh failure and should not be worked around by the plugin.
 
-## v6 candidate — native target-folder picker
+### v6 candidate — native target-folder picker
 
 Add a **Browse…** button beside the target-path field in the Create Link dialog.
 
@@ -117,7 +127,7 @@ Add a **Browse…** button beside the target-path field in the Create Link dialo
 
 
 
-## v6 implementation
+### v6 implementation
 
 - Added a native **Browse…** button beside the target-directory field.
 - The picker selects directories only and writes the absolute selected path into the existing editable field.
@@ -144,7 +154,7 @@ For existing file symlinks, link-specific context-menu actions should behave as 
 - **Remove link…** requires no special file/directory handling and remains unchanged.
 - **Show link target** must know whether the target is a file or directory. For a file target, show the directory containing the target file; for a directory target, retain the existing behaviour.
 - **Open target in system explorer** opens the target directory. For a file link, open the directory containing the target file; for a directory link, open the target directory itself.
-- **Go to vault** does not appear for file links, because a file is not a vault directory.
+- **Open vault** does not appear for file links, because a file is not a vault directory.
 - For existing links, determine file/directory status from the actual filesystem target rather than relying on creation-time state.
 
 
@@ -158,7 +168,7 @@ For existing file symlinks, link-specific context-menu actions should behave as 
 - Extend testing for file symlinks: creation using both Browse and a manually typed path; opening the linked file normally in Obsidian; Show link target; Open target in system explorer; Remove link; link decoration; broken/missing target handling; duplicate-name rejection; inconsistent File/Folder target validation; and confirmation that Windows Junction is unavailable for File targets.
 - Verify during implementation/testing that Obsidian exposes a filesystem symlink-to-file as a normal file object through the `file-menu` event. Treat this as an implementation assumption to confirm rather than silently relying on it.
 
-## v7 implementation — file symbolic links
+### v7 implementation — file symbolic links
 
 Implemented the planned file-symlink support in the v7 development build:
 
@@ -169,7 +179,7 @@ Implemented the planned file-symlink support in the v7 development build:
 - Windows junctions remain directory-only and are disabled when File is selected.
 - The File Explorer context-menu handler now considers files as well as folders. Ordinary files receive no plugin items; recognised file symlinks receive Show/Remove actions.
 - File-link Show displays the directory containing the target file. Open target in system explorer uses the same directory resolution and opens that directory.
-- Go to vault remains directory-only.
+- Open vault remains directory-only.
 - Link metadata now distinguishes target existence from whether the target is a directory.
 - File Explorer decoration now scans both folder and file rows.
 - Removal confirmation wording is neutral for files and directories; removal itself remains unchanged and does not reload Obsidian.
@@ -185,4 +195,4 @@ Implementation-time verification still required in Obsidian: confirm that a file
 - **Open target in system explorer:** restored for both directory and file links using one directory-based path. Directory targets open directly; file targets use their containing directory. No file-specific Explorer branch is required.
 
 
-- Final v8 UI wording: renamed the vault action from `Go to vault` to `Open vault`.
+- Final v8 UI wording: renamed the vault action from `Open vault` to `Open vault`.
