@@ -5,12 +5,13 @@ import {
   Notice,
   Plugin,
   Setting,
+  TAbstractFile,
   TFolder,
   setIcon,
 } from "obsidian";
 import { promises as fs, lstatSync, readlinkSync, realpathSync, statSync } from "fs";
 import * as nodePath from "path";
-import { shell } from "electron";
+import { ipcRenderer, shell } from "electron";
 import { refreshAfterExternalLinkChange } from "./refresh";
 
 type LinkCreationType = "symlink" | "junction";
@@ -19,6 +20,7 @@ interface LinkInfo {
   isLink: boolean;
   target: string | null;
   targetExists: boolean;
+  targetIsDirectory: boolean;
   isVault: boolean;
 }
 
@@ -26,6 +28,7 @@ class CreateSymlinkModal extends Modal {
   private targetPath = "";
   private linkName = "";
   private linkType: LinkCreationType = "symlink";
+  private isDirectory = true;
 
   constructor(
     private readonly plugin: SymlinkManagerPlugin,
@@ -35,6 +38,10 @@ class CreateSymlinkModal extends Modal {
   }
 
   onOpen(): void {
+    this.render();
+  }
+
+  private render(): void {
     const { contentEl } = this;
     contentEl.empty();
     contentEl.createEl("h2", { text: "Create link" });
@@ -43,15 +50,34 @@ class CreateSymlinkModal extends Modal {
     contentEl.createEl("p", { text: `Create in: ${where}` });
 
     new Setting(contentEl)
-      .setName("Target directory")
-      .setDesc("Choose a directory, or enter its absolute filesystem path.")
+      .setName("Target type")
+      .setDesc("Choose whether the link will point to a folder or a file.")
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption("directory", "Folder")
+          .addOption("file", "File")
+          .setValue(this.isDirectory ? "directory" : "file")
+          .onChange((value) => {
+            this.isDirectory = value === "directory";
+            this.targetPath = "";
+            this.linkName = "";
+            if (!this.isDirectory) this.linkType = "symlink";
+            this.render();
+          });
+      });
+
+    new Setting(contentEl)
+      .setName(this.isDirectory ? "Target folder" : "Target file")
+      .setDesc(`Choose a ${this.isDirectory ? "folder" : "file"}, or enter its absolute filesystem path.`)
       .addText((text) => {
         text.inputEl.addClass("symlink-manager-target-input");
-        text.setPlaceholder("C:\\path\\to\\folder or /home/user/folder");
+        text.setPlaceholder(this.isDirectory ? "C:\\path\\to\\folder or /home/user/folder" : "C:\\path\\to\\file.ext or /home/user/file.ext");
+        text.setValue(this.targetPath);
         text.onChange((value) => this.setTargetPath(value.trim(), false));
       })
       .addButton((button) => {
-        button.setButtonText("Browse…").setTooltip("Choose target directory").onClick(async () => {
+        const kind = this.isDirectory ? "folder" : "file";
+        button.setButtonText("Browse…").setTooltip(`Choose target ${kind}`).onClick(async () => {
           try {
             // `dialog` is a main-process Electron API. Obsidian exposes it to
             // desktop plugins through @electron/remote (with electron.remote as
@@ -66,14 +92,14 @@ class CreateSymlinkModal extends Modal {
               throw new Error("Electron remote dialog API is unavailable");
             }
             const result = await remote.dialog.showOpenDialog(remote.getCurrentWindow?.(), {
-              title: "Choose target directory",
+              title: `Choose target ${kind}`,
               defaultPath: this.targetPath || undefined,
-              properties: ["openDirectory"],
+              properties: [this.isDirectory ? "openDirectory" : "openFile"],
             });
             if (result.canceled || result.filePaths.length === 0) return;
             this.setTargetPath(result.filePaths[0], true);
           } catch (error) {
-            this.plugin.reportError("Could not open folder picker", error);
+            this.plugin.reportError(`Could not open ${kind} picker`, error);
           }
         });
       });
@@ -84,7 +110,7 @@ class CreateSymlinkModal extends Modal {
 
     nameSetting.addText((text) => {
       text.inputEl.addClass("symlink-manager-name-input");
-      text.setPlaceholder("Folder name");
+      text.setPlaceholder(this.isDirectory ? "Folder name" : "File name");
       text.setValue(this.linkName);
       text.onChange((value) => {
         this.linkName = value.trim();
@@ -94,12 +120,15 @@ class CreateSymlinkModal extends Modal {
     if (process.platform === "win32") {
       new Setting(contentEl)
         .setName("Windows link type")
-        .setDesc("Junctions usually do not require Developer Mode. Symbolic links are more portable.")
+        .setDesc(this.isDirectory
+          ? "Junctions usually do not require Developer Mode. Symbolic links are more portable."
+          : "Junctions are available only for folders.")
         .addDropdown((dropdown) => {
           dropdown
             .addOption("symlink", "Symbolic link")
             .addOption("junction", "Junction")
-            .setValue(this.linkType)
+            .setValue(this.isDirectory ? this.linkType : "symlink")
+            .setDisabled(!this.isDirectory)
             .onChange((value) => {
               this.linkType = value as LinkCreationType;
             });
@@ -116,11 +145,12 @@ class CreateSymlinkModal extends Modal {
           .setCta()
           .onClick(async () => {
             try {
-              await this.plugin.createDirectoryLink(
+              await this.plugin.createLink(
                 this.destinationVaultPath,
                 this.targetPath,
                 this.linkName,
                 this.linkType,
+                this.isDirectory,
               );
               this.close();
             } catch (error) {
@@ -192,7 +222,7 @@ class ConfirmRemoveModal extends Modal {
     contentEl.empty();
     contentEl.createEl("h2", { text: `Remove link “${nodePath.basename(this.vaultPath)}”?` });
     contentEl.createEl("p", {
-      text: "Only the filesystem link will be removed. The target folder and its contents will not be changed.",
+      text: "Only the filesystem link will be removed. The target will not be changed.",
       cls: "symlink-manager-warning",
     });
     contentEl.createEl("p", { text: "Target:" });
@@ -238,8 +268,7 @@ export default class SymlinkManagerPlugin extends Plugin {
 
     this.registerEvent(
       this.app.workspace.on("file-menu", (menu, file) => {
-        if (!(file instanceof TFolder)) return;
-        this.addFolderMenuItems(menu, file);
+        this.addFileMenuItems(menu, file);
       }),
     );
 
@@ -253,29 +282,34 @@ export default class SymlinkManagerPlugin extends Plugin {
     document.querySelectorAll(".symlink-manager-link-badge").forEach((el) => el.remove());
   }
 
-  private addFolderMenuItems(menu: Menu, folder: TFolder): void {
-    menu.addSeparator();
-    menu.addItem((item) => {
-      item
-        .setTitle("Create link here…")
-        .setIcon("folder-symlink")
-        .onClick(() => new CreateSymlinkModal(this, folder.path).open());
-    });
+  private addFileMenuItems(menu: Menu, file: TAbstractFile): void {
+    if (file instanceof TFolder) {
+      menu.addSeparator();
+      menu.addItem((item) => {
+        item
+          .setTitle("Create link here…")
+          .setIcon("folder-symlink")
+          .onClick(() => new CreateSymlinkModal(this, file.path).open());
+      });
+    }
 
-    const info = this.getLinkInfoSync(folder.path);
+    const info = this.getLinkInfoSync(file.path);
     if (!info.isLink || !info.target) return;
+
+    if (!(file instanceof TFolder)) menu.addSeparator();
 
     menu.addItem((item) => {
       item
         .setTitle("Show link target")
         .setIcon("info")
         .onClick(() => {
-          const current = this.getLinkInfoSync(folder.path);
+          const current = this.getLinkInfoSync(file.path);
           if (!current.isLink || !current.target) {
             new Notice("The selected path is no longer a link.");
             return;
           }
-          new TargetInfoModal(this.app, folder.path, current.target, current.targetExists, current.isVault).open();
+          const displayTarget = this.targetDirectoryForMenu(current);
+          new TargetInfoModal(this.app, file.path, displayTarget, current.targetExists, current.isVault).open();
         });
     });
 
@@ -284,19 +318,25 @@ export default class SymlinkManagerPlugin extends Plugin {
         .setTitle("Open target in system explorer")
         .setIcon("folder-open")
         .onClick(async () => {
-          const current = await this.getLinkInfo(folder.path);
+          const current = await this.getLinkInfo(file.path);
           if (!current.isLink || !current.target) {
             new Notice("The selected path is no longer a link.");
             return;
           }
-          const error = await shell.openPath(current.target);
+          const directory = this.targetDirectoryForMenu(current);
+          const error = await shell.openPath(directory);
           if (error) new Notice(`Could not open target: ${error}`);
         });
     });
 
-    if (info.isVault) {
+    if (info.targetIsDirectory && info.isVault) {
       menu.addItem((item) => {
-        item.setTitle("Go to vault (coming later)").setIcon("vault").setDisabled(true);
+        item
+          .setTitle("Open vault")
+          .setIcon("vault")
+          .onClick(() => {
+            ipcRenderer.sendSync("vault-open", info.target, false);
+          });
       });
     }
 
@@ -304,28 +344,40 @@ export default class SymlinkManagerPlugin extends Plugin {
       item
         .setTitle("Remove link…")
         .setIcon("unlink")
-        .onClick(() => new ConfirmRemoveModal(this, folder.path, info.target!).open());
+        .onClick(() => new ConfirmRemoveModal(this, file.path, info.target!).open());
     });
   }
 
-  async createDirectoryLink(
+  private targetDirectoryForMenu(info: LinkInfo): string {
+    if (!info.target) return "";
+    return info.targetIsDirectory ? info.target : nodePath.dirname(info.target);
+  }
+
+  async createLink(
     destinationVaultPath: string,
     rawTargetPath: string,
     rawLinkName: string,
     linkType: LinkCreationType,
+    isDirectory: boolean,
   ): Promise<void> {
     const targetPath = this.normaliseExternalPath(rawTargetPath);
     const linkName = rawLinkName.trim();
+    const invalidTarget = "Target does not exist or inconsistent type.";
 
-    if (!targetPath) throw new Error("Enter an absolute target directory path.");
-    if (!nodePath.isAbsolute(targetPath)) throw new Error("Target path must be absolute.");
+    if (!targetPath || !nodePath.isAbsolute(targetPath)) throw new Error(invalidTarget);
     if (!linkName) throw new Error("Enter a link name.");
     if (linkName === "." || linkName === ".." || /[\\/]/.test(linkName)) {
-      throw new Error("Link name must be a single folder name.");
+      throw new Error("Link name must be a single name.");
     }
-
-    const targetStat = await fs.stat(targetPath);
-    if (!targetStat.isDirectory()) throw new Error("Target must be a directory.");
+    let targetStat;
+    try {
+      targetStat = await fs.stat(targetPath);
+    } catch {
+      throw new Error(invalidTarget);
+    }
+    if ((isDirectory && !targetStat.isDirectory()) || (!isDirectory && !targetStat.isFile())) {
+      throw new Error(invalidTarget);
+    }
 
     const parentAbsolute = this.absoluteVaultPath(destinationVaultPath);
     const linkAbsolute = nodePath.join(parentAbsolute, linkName);
@@ -334,7 +386,8 @@ export default class SymlinkManagerPlugin extends Plugin {
     }
 
     try {
-      await fs.symlink(targetPath, linkAbsolute, linkType === "junction" ? "junction" : "dir");
+      const symlinkType = linkType === "junction" ? "junction" : (isDirectory ? "dir" : "file");
+      await fs.symlink(targetPath, linkAbsolute, symlinkType);
     } catch (error) {
       if (this.errorCode(error) === "EEXIST") {
         throw new Error("An item with that name already exists in this folder.");
@@ -389,11 +442,15 @@ export default class SymlinkManagerPlugin extends Plugin {
     return vaultPath ? adapter.getFullPath(vaultPath) : adapter.getBasePath();
   }
 
+  private emptyLinkInfo(): LinkInfo {
+    return { isLink: false, target: null, targetExists: false, targetIsDirectory: false, isVault: false };
+  }
+
   private getLinkInfoSync(vaultPath: string): LinkInfo {
     try {
       const absoluteLink = this.absoluteVaultPath(vaultPath);
       const stat = lstatSync(absoluteLink);
-      if (!stat.isSymbolicLink()) return { isLink: false, target: null, targetExists: false, isVault: false };
+      if (!stat.isSymbolicLink()) return this.emptyLinkInfo();
 
       let target: string;
       try {
@@ -404,16 +461,25 @@ export default class SymlinkManagerPlugin extends Plugin {
       }
 
       let targetExists = false;
+      let targetIsDirectory = false;
       let isVault = false;
       try {
-        targetExists = statSync(target).isDirectory();
-        if (targetExists) isVault = statSync(nodePath.join(target, ".obsidian")).isDirectory();
+        const targetStat = statSync(target);
+        targetExists = true;
+        targetIsDirectory = targetStat.isDirectory();
+        if (targetIsDirectory) {
+          try {
+            isVault = statSync(nodePath.join(target, ".obsidian")).isDirectory();
+          } catch {
+            isVault = false;
+          }
+        }
       } catch {
         // Broken/inaccessible target is still a link.
       }
-      return { isLink: true, target, targetExists, isVault };
+      return { isLink: true, target, targetExists, targetIsDirectory, isVault };
     } catch {
-      return { isLink: false, target: null, targetExists: false, isVault: false };
+      return this.emptyLinkInfo();
     }
   }
 
@@ -421,7 +487,7 @@ export default class SymlinkManagerPlugin extends Plugin {
     const absoluteLink = this.absoluteVaultPath(vaultPath);
     try {
       const stat = await fs.lstat(absoluteLink);
-      if (!stat.isSymbolicLink()) return { isLink: false, target: null, targetExists: false, isVault: false };
+      if (!stat.isSymbolicLink()) return this.emptyLinkInfo();
 
       let target: string;
       try {
@@ -432,18 +498,25 @@ export default class SymlinkManagerPlugin extends Plugin {
       }
 
       let targetExists = false;
+      let targetIsDirectory = false;
       let isVault = false;
       try {
-        targetExists = (await fs.stat(target)).isDirectory();
-        if (targetExists) isVault = (await fs.stat(nodePath.join(target, ".obsidian"))).isDirectory();
+        const targetStat = await fs.stat(target);
+        targetExists = true;
+        targetIsDirectory = targetStat.isDirectory();
+        if (targetIsDirectory) {
+          try {
+            isVault = (await fs.stat(nodePath.join(target, ".obsidian"))).isDirectory();
+          } catch {
+            isVault = false;
+          }
+        }
       } catch {
         // Broken/inaccessible target is still a link.
       }
-      return { isLink: true, target, targetExists, isVault };
+      return { isLink: true, target, targetExists, targetIsDirectory, isVault };
     } catch (error) {
-      if (this.errorCode(error) === "ENOENT") {
-        return { isLink: false, target: null, targetExists: false, isVault: false };
-      }
+      if (this.errorCode(error) === "ENOENT") return this.emptyLinkInfo();
       throw error;
     }
   }
@@ -482,7 +555,8 @@ export default class SymlinkManagerPlugin extends Plugin {
 
   private decorateVisibleLinks(): void {
     const titles = document.querySelectorAll<HTMLElement>(
-      '.workspace-leaf-content[data-type="file-explorer"] .nav-folder-title[data-path]',
+      '.workspace-leaf-content[data-type="file-explorer"] .nav-folder-title[data-path], ' +
+      '.workspace-leaf-content[data-type="file-explorer"] .nav-file-title[data-path]',
     );
 
     for (const title of titles) {
@@ -501,7 +575,8 @@ export default class SymlinkManagerPlugin extends Plugin {
       badge.addClass("symlink-manager-link-badge");
       badge.setAttribute("aria-label", "Filesystem link");
       setIcon(badge, "link-2");
-      title.appendChild(badge);
+      const titleContent = title.querySelector<HTMLElement>(".nav-file-title-content, .nav-folder-title-content");
+      (titleContent ?? title).appendChild(badge);
     }
   }
 }
