@@ -1,4 +1,23 @@
-# Symlink Manager 1.1.0 testing
+# Symlink Manager 1.1.1 testing
+
+## Automated checks
+
+After installing dependencies with `npm ci`, run:
+
+```bash
+npm run check
+npm run build
+npm test
+```
+
+The checks respectively validate TypeScript types, generate `main.js`, and exercise standalone Node filesystem operations. The filesystem test covers directory symbolic links and, on Windows, directory junctions: creation, detection, target resolution, duplicate-name rejection, removal and preservation of target contents. It requires permission to create the relevant links.
+
+The automated test does not exercise the plugin implementation, file symbolic links, broken links, dialogs, context menus, decoration or reload behaviour. The following manual checks cover Obsidian integration; they are a test plan, not a record of a completed test run.
+
+## Root creation
+
+1. Run **Create link in vault root** from the Command Palette and confirm the destination is the vault root.
+2. Right-click empty File Explorer space and check whether **Create link here…** is available and targets the root. This depends on Obsidian exposing the root through `file-menu`; use the Command Palette if it is unavailable.
 
 ## File-link creation
 
@@ -21,9 +40,16 @@
 4. Confirm **Open vault** does not appear on a file link.
 5. **Show link target** should report the resolved target file.
 6. **Show link target in system folder** should open the operating system file explorer at the target location and reveal/select the target file.
-7. Open/edit the linked file normally in Obsidian and confirm changes affect the target file.
+7. Open/edit a linked Markdown file in Obsidian and confirm changes affect the target file. Check other file types separately against the known rendering limitations below.
 8. Confirm Obsidian’s own **Open in default app** command opens the linked file with the operating system’s associated application.
 9. Remove the link and confirm no reload occurs and the target file remains unchanged.
+
+## Broken-link behaviour
+
+1. Create a link to a disposable test target, then move the target outside Obsidian.
+2. If Obsidian still displays the link, confirm **Show link target** reports the missing target.
+3. Remove the broken link with **Remove link…** and confirm the moved target remains unchanged.
+4. Record if Obsidian hides the broken link, preventing access to its context menu.
 
 ## Folder/junction regression
 

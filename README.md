@@ -16,7 +16,7 @@ Symlink Manager brings filesystem symbolic links into Obsidian's File Explorer o
 
 Symlink Manager works from the **right-click context menus in Obsidian's File Explorer**.
 
-Right-click a folder or empty space to create a link. Choose whether the target is a **directory** or a **file**, then select the target or enter its absolute path. On Windows, directory targets can also be created as junctions.
+Right-click a folder to create a link. To create at the vault root, use **Create link in vault root** in the Command Palette, or right-click empty File Explorer space if Obsidian exposes the root context menu there. Choose whether the target is a **directory** or a **file**, then select the target or enter its absolute path. On Windows, directory targets can also be created as junctions.
 
 Right-click an existing link for actions appropriate to that link. These include viewing its target, opening the target in the system file explorer, safely removing the link (just the link itself), and **Open vault** when a linked directory is recognised as an Obsidian vault. For a linked file, **Show link target in system folder** reveals the target file in its containing folder.
 
@@ -100,9 +100,11 @@ Restart or reload Obsidian, then enable **Symlink Manager** under **Settings →
 ## Building from source
 
 ```bash
-npm install
+npm ci
 npm run build
 ```
+
+The build generates `main.js`, which is not committed to the repository. See [TESTING.md](TESTING.md) for type checking and automated/manual verification, [DESIGN.md](DESIGN.md) for the implementation reference, and [CHANGELOG.md](CHANGELOG.md) for release history.
 
 ## Development
 
