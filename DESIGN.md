@@ -81,10 +81,13 @@ Windows symbolic links may require Developer Mode or elevated permissions. Permi
 - `main.ts`: dialogs, context menus, filesystem operations and Explorer decoration.
 - `refresh.ts`: the creation-time reload mechanism.
 - `styles.css`: link badges and dialog styling.
-- `build.mjs`: transpiles and combines the TypeScript sources into `main.js`.
+- `build.mjs`: transpiles and combines the TypeScript sources, then minifies the CommonJS output with Terser into production `main.js`. Property mangling and unsafe compression are disabled.
+- `.github/workflows/build.yml`: clean Windows/Node.js 24 build, checks, tests and artifact upload for testing and release preparation.
 - `test-link-ops.mjs`: standalone file- and directory-link filesystem checks.
 
 `npm run check` performs TypeScript checking separately from `npm run build`. The generated `main.js` is ignored by Git.
+
+The workflow uses `npm ci` with the committed lockfile and an exactly pinned Terser development dependency. Minification belongs to the npm build rather than a CI-only step, so local and CI builds follow the same code path. Actions artifacts contain `main.js`, `manifest.json`, and `styles.css`; GitHub Release assets remain the published distribution. The workflow has only `contents: read` permissions and does not publish or modify releases. The Node 24 release line and `windows-latest` runner receive updates, so the clean build is not a frozen, byte-for-byte environment.
 
 See [TESTING.md](TESTING.md) for automated coverage and manual integration checks, and [CHANGELOG.md](CHANGELOG.md) for release history.
 

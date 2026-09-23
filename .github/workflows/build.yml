@@ -1,0 +1,50 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check TypeScript
+        run: npm run check
+
+      - name: Test filesystem links
+        run: npm test
+
+      - name: Build production plugin
+        run: npm run build
+
+      - name: Check generated JavaScript syntax
+        run: node --check main.js
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: symlink-manager-${{ github.sha }}
+          path: |
+            main.js
+            manifest.json
+            styles.css
+          if-no-files-found: error
+          retention-days: 30

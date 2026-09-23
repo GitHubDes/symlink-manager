@@ -2,15 +2,19 @@
 
 ## Automated checks
 
-After installing dependencies with `npm ci`, run:
+Use Node.js 24 LTS. Run the same sequence as GitHub Actions:
 
 ```bash
+npm ci
 npm run check
-npm run build
 npm test
+npm run build
+node --check main.js
 ```
 
-The checks respectively validate TypeScript types, generate `main.js`, and exercise standalone Node filesystem operations. The filesystem test covers file and directory symbolic links and, on Windows, directory junctions: creation, detection, target resolution, duplicate-name rejection, removal and preservation of target contents. It requires permission to create the relevant links.
+These steps install locked dependencies, validate TypeScript types, exercise standalone Node filesystem operations, generate minified production `main.js`, and check its JavaScript syntax. The filesystem test covers file and directory symbolic links and, on Windows, directory junctions: creation, detection, target resolution, duplicate-name rejection, removal and preservation of target contents. It requires permission to create the relevant links.
+
+The Build workflow runs on GitHub-hosted `windows-latest`, including the Windows junction tests. It uploads the three plugin files only after successful checks. Use that clean build artifact for testing and release preparation; publishing GitHub Release assets remains a separate process. Before publication, smoke-test the minified plugin in Obsidian; syntax checking does not verify runtime integration.
 
 The automated test does not exercise the plugin implementation, broken links, dialogs, context menus, decoration or reload behaviour. The following manual checks cover Obsidian integration; they are a test plan, not a record of a completed test run.
 

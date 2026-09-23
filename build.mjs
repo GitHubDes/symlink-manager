@@ -1,5 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import ts from "typescript";
+import { minify } from "terser";
 
 const compilerOptions = {
   target: ts.ScriptTarget.ES2022,
@@ -54,5 +55,18 @@ if (!replaced) {
 
 const banner = "// GENERATED FILE - built from main.ts and refresh.ts by build.mjs. Do not edit directly.\n";
 const bundled = `${banner}const __refreshModule = {};\n(function(exports) {\n${refreshJs}\n})(__refreshModule);\n${mainJs}`;
-await writeFile("main.js", bundled, "utf8");
-console.log(`Built main.js (${Buffer.byteLength(bundled)} bytes)`);
+// Preserve CommonJS exports and Obsidian API property names. Terser's unsafe
+// compression options remain disabled; only local identifiers are mangled.
+const result = await minify(bundled, {
+  ecma: 2022,
+  module: false,
+  toplevel: false,
+  compress: { unsafe: false },
+  mangle: { properties: false },
+  sourceMap: false,
+  format: { preamble: banner.trimEnd() },
+});
+if (!result.code) throw new Error("Minification produced no JavaScript.");
+const output = `${result.code}\n`;
+await writeFile("main.js", output, "utf8");
+console.log(`Built minified main.js (${Buffer.byteLength(output)} bytes)`);
