@@ -18,7 +18,8 @@ async function verifyLink(type) {
   await fs.symlink(target, link, type);
   const stat = await fs.lstat(link);
   assert.equal(stat.isSymbolicLink(), true, `${type}: lstat must identify link`);
-  assert.equal(path.resolve(await fs.realpath(link)), path.resolve(target), `${type}: target resolution`);
+  // Canonicalise both paths so Windows 8.3 aliases compare with their long paths.
+  assert.equal(await fs.realpath(link), await fs.realpath(target), `${type}: target resolution`);
   if (type === 'file') {
     assert.equal((await fs.stat(link)).isFile(), true, 'file: link resolves to a file');
     assert.equal(await fs.readFile(link, 'utf8'), 'keep', 'file: target content accessible through link');
