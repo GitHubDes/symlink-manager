@@ -1,11 +1,18 @@
 # Changelog
 
+## 1.1.1
+
+- Renamed the system-folder action to **Show link target in system folder** for clearer intent.
+- Linked file targets are revealed/selected in the operating system file manager.
+- Documented that Obsidian's own **Open in default app** works for linked files.
+- Added TypeScript/build metadata and a dependency lock file for reproducible review and release preparation.
+
 ## 1.1.0
 
 - Added symbolic links to individual files as well as directories.
 - Added a Folder/File target selector with native folder and file pickers.
 - Added **Open vault** for linked directories that are detected as Obsidian vaults; Obsidian opens or focuses the target vault and leaves the current vault open.
-- Added **Open target in default app** for linked files.
+- Added **Show link target in system folder** for linked files, revealing the real target file in its containing folder.
 - Improved link detection, File Explorer decoration and refresh behaviour.
 - Windows junction creation remains directory-only.
 - Expanded README documentation for linked-vault workflows, Markdown file symlinks and known Obsidian behaviour.
@@ -152,8 +159,8 @@ Corrected an unintended v6 behaviour: removing a symlink/junction no longer relo
 For existing file symlinks, link-specific context-menu actions should behave as follows:
 
 - **Remove link…** requires no special file/directory handling and remains unchanged.
-- **Show link target** must know whether the target is a file or directory. For a file target, show the directory containing the target file; for a directory target, retain the existing behaviour.
-- **Open target in system explorer** opens the target directory. For a file link, open the directory containing the target file; for a directory link, open the target directory itself.
+- **Show link target** displays the resolved target path itself for both file and directory links.
+- **Show link target in system folder** opens a directory target directly. For a file link, reveal/select the real target file in its containing folder.
 - **Open vault** does not appear for file links, because a file is not a vault directory.
 - For existing links, determine file/directory status from the actual filesystem target rather than relying on creation-time state.
 
@@ -165,7 +172,7 @@ For existing file symlinks, link-specific context-menu actions should behave as 
 - Generalise `LinkInfo` so target existence is independent of target type. An existing file target must report `targetExists: true`; track whether the target is a directory separately for menu/action behaviour.
 - Make removal confirmation wording target-neutral. Use wording such as: **Only the filesystem link will be removed. The target will not be changed.**
 - Remove or dynamically adapt directory-only creation wording such as **Target directory**, **single folder name**, and **Folder name** when File is selected.
-- Extend testing for file symlinks: creation using both Browse and a manually typed path; opening the linked file normally in Obsidian; Show link target; Open target in system explorer; Remove link; link decoration; broken/missing target handling; duplicate-name rejection; inconsistent File/Folder target validation; and confirmation that Windows Junction is unavailable for File targets.
+- Extend testing for file symlinks: creation using both Browse and a manually typed path; opening the linked file normally in Obsidian; Show link target; Show link target in system folder; Remove link; link decoration; broken/missing target handling; duplicate-name rejection; inconsistent File/Folder target validation; and confirmation that Windows Junction is unavailable for File targets.
 - Verify during implementation/testing that Obsidian exposes a filesystem symlink-to-file as a normal file object through the `file-menu` event. Treat this as an implementation assumption to confirm rather than silently relying on it.
 
 ### v7 implementation — file symbolic links
@@ -178,7 +185,7 @@ Implemented the planned file-symlink support in the v7 development build:
 - Manually entered targets are checked against the selected type; nonexistent or mismatched targets use the single message `Target does not exist or inconsistent type.`
 - Windows junctions remain directory-only and are disabled when File is selected.
 - The File Explorer context-menu handler now considers files as well as folders. Ordinary files receive no plugin items; recognised file symlinks receive Show/Remove actions.
-- File-link Show displays the directory containing the target file. Open target in system explorer uses the same directory resolution and opens that directory.
+- File-link Show displays the resolved target file path. **Show link target in system folder** reveals/selects the real target file in its containing folder.
 - Open vault remains directory-only.
 - Link metadata now distinguishes target existence from whether the target is a directory.
 - File Explorer decoration now scans both folder and file rows.
@@ -192,7 +199,7 @@ Implementation-time verification still required in Obsidian: confirm that a file
 
 - Link decoration is appended to the file/folder title-content element rather than the whole File Explorer row, so a file link badge does not displace Obsidian's file-type indicator.
 - Windows testing confirmed that file symlinks are created with the correct target extension. Obsidian on Windows renders Markdown file symlinks normally; rendering of other linked file types such as PDF/JPG is controlled by Obsidian and may differ by platform. The filesystem links themselves remain usable, including via the system default application.
-- **Open target in system explorer:** restored for both directory and file links using one directory-based path. Directory targets open directly; file targets use their containing directory. No file-specific Explorer branch is required.
+- **Show link target in system folder:** available for both directory and file links. Directory targets open directly; existing file targets are revealed/selected in their containing folder.
 
 
 - Final v8 UI wording: renamed the vault action from `Open vault` to `Open vault`.

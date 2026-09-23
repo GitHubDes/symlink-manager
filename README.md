@@ -9,7 +9,7 @@ Symlink Manager brings filesystem symbolic links into Obsidian's File Explorer o
 - Link complete directories into a vault without copying their contents.
 - Create links to either **files or directories** using the native picker or an absolute path.
 - Remove a link without deleting the file or directory it points to.
-- Open linked files in their operating-system default application.
+- Reveal linked file targets in the operating system file explorer.
 - Visually identify linked items in the File Explorer.
 
 ## Using Symlink Manager
@@ -18,7 +18,7 @@ Symlink Manager works from the **right-click context menus in Obsidian's File Ex
 
 Right-click a folder or empty space to create a link. Choose whether the target is a **directory** or a **file**, then select the target or enter its absolute path. On Windows, directory targets can also be created as junctions.
 
-Right-click an existing link for actions appropriate to that link. These include viewing its target, opening a directory target in the system file explorer, opening a linked file in its default application, safely removing the link (just the link itself), and **Open vault** when a linked directory is recognised as an Obsidian vault.
+Right-click an existing link for actions appropriate to that link. These include viewing its target, opening the target in the system file explorer, safely removing the link (just the link itself), and **Open vault** when a linked directory is recognised as an Obsidian vault. For a linked file, **Show link target in system folder** reveals the target file in its containing folder.
 
 ### Open vault
 
@@ -44,6 +44,8 @@ Symlink Manager can create symbolic links to individual files as well as directo
 
 In our Windows testing, Obsidian follows symlinks to Markdown files correctly: the linked note opens and renders normally. Editing the note through the link edits the target file because the link and target are the same filesystem content, not copies.
 
+For linked files, Obsidian’s own **Open in default app** command can be used to open the linked file with the operating system’s associated application.
+
 ## Obsidian and symlinks: important behaviour
 
 Symbolic links are provided by the operating system, but what Obsidian does with a linked item depends on Obsidian's own file handling. Symlink Manager creates and manages the filesystem link; it cannot make every Obsidian viewer treat that link in the same way.
@@ -56,10 +58,10 @@ The following behaviour has been observed during Windows testing of this release
 | Directory junction                                    | Works as a linked directory/tree.                                                        |
 | Symlink to `.md` file                                 | Opens and renders normally.                                                              |
 | Symlink to PDF/image/other non-Markdown file          | Obsidian may recognise the file type but fail to render the target content.              |
-| Non-Markdown file opened with **Open in default app** | Windows follows the symlink and the target opens normally in its associated application. |
+| File link opened with **Show link target in system folder** | The operating system file explorer opens at the target location; for an existing file target, the file is revealed/selected. |
 | Symlink to another Obsidian vault                     | Can be opened directly with **Open vault**.                                              |
 
-For example, a symlink named as a PDF may cause Obsidian to start its PDF viewer but display no pages. This does **not** mean the symbolic link is invalid: opening that same link in the operating system's default PDF application can work normally. Similar behaviour can occur with images and other non-Markdown resources.
+For example, a symlink named as a PDF may cause Obsidian to start its PDF viewer but display no pages. This does **not** mean the symbolic link is invalid. **Show link target in system folder** can reveal the real target file so it can be opened directly with the operating system if needed. Similar behaviour can occur with images and other non-Markdown resources.
 
 These are Obsidian-side rendering/file-access behaviours rather than different kinds of links created by Symlink Manager. Behaviour may differ between Obsidian versions and between Windows, macOS and Linux, so non-Windows results are welcome.
 

@@ -133,7 +133,7 @@ Initial menu:
 
 -   **Create link here…**
 -   **Show link target**
--   **Open target in system explorer**
+-   **Show link target in system folder**
 -   **Remove link…**
 -   **Open vault** --- only when simple vault detection succeeds
 
@@ -166,7 +166,7 @@ important information is the target path and whether it exists.
 
 ### Open targets
 
-Directory targets can be revealed/opened in the operating system file manager. File targets can be opened with their operating-system default application.
+Directory targets open in the operating system file manager. File targets are revealed in their containing folder, with the file selected where the platform supports it.
 
 ### Remove symlink
 
@@ -387,7 +387,7 @@ The current 1.1.0 release provides:
 4.  Link name defaulting from the selected target.
 5.  Visual link indicator for recognised linked folders and files.
 6.  **Show link target**.
-7.  **Open target in system explorer**.
+7.  **Show link target in system folder**.
 8.  **Remove link…**, with immediate filesystem verification and
     explicit safe wording.
 9.  Simple `.obsidian` vault detection.

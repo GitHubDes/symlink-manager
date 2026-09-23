@@ -97,7 +97,9 @@ class CreateSymlinkModal extends Modal {
               properties: [this.isDirectory ? "openDirectory" : "openFile"],
             });
             if (result.canceled || result.filePaths.length === 0) return;
-            this.setTargetPath(result.filePaths[0], true);
+            const selectedPath = result.filePaths[0];
+            if (!selectedPath) return;
+            this.setTargetPath(selectedPath, true);
           } catch (error) {
             this.plugin.reportError(`Could not open ${kind} picker`, error);
           }
@@ -308,14 +310,13 @@ export default class SymlinkManagerPlugin extends Plugin {
             new Notice("The selected path is no longer a link.");
             return;
           }
-          const displayTarget = this.targetDirectoryForMenu(current);
-          new TargetInfoModal(this.app, file.path, displayTarget, current.targetExists, current.isVault).open();
+          new TargetInfoModal(this.app, file.path, current.target, current.targetExists, current.isVault).open();
         });
     });
 
     menu.addItem((item) => {
       item
-        .setTitle("Open target in system explorer")
+        .setTitle("Show link target in system folder")
         .setIcon("folder-open")
         .onClick(async () => {
           const current = await this.getLinkInfo(file.path);
@@ -323,9 +324,15 @@ export default class SymlinkManagerPlugin extends Plugin {
             new Notice("The selected path is no longer a link.");
             return;
           }
-          const directory = this.targetDirectoryForMenu(current);
-          const error = await shell.openPath(directory);
-          if (error) new Notice(`Could not open target: ${error}`);
+          if (current.targetIsDirectory) {
+            const error = await shell.openPath(current.target);
+            if (error) new Notice(`Could not open target: ${error}`);
+          } else if (current.targetExists) {
+            shell.showItemInFolder(current.target);
+          } else {
+            const error = await shell.openPath(nodePath.dirname(current.target));
+            if (error) new Notice(`Could not open target location: ${error}`);
+          }
         });
     });
 
@@ -348,10 +355,6 @@ export default class SymlinkManagerPlugin extends Plugin {
     });
   }
 
-  private targetDirectoryForMenu(info: LinkInfo): string {
-    if (!info.target) return "";
-    return info.targetIsDirectory ? info.target : nodePath.dirname(info.target);
-  }
 
   async createLink(
     destinationVaultPath: string,

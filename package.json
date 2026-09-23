@@ -1,20 +1,25 @@
 {
   "name": "symlink-manager",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "description": "Obsidian desktop plugin for creating and managing file and directory symbolic links, Windows junctions, and linked vaults.",
   "main": "main.js",
+  "type": "module",
   "scripts": {
-    "build": "node esbuild.config.mjs production",
-    "dev": "node esbuild.config.mjs"
+    "build": "node build.mjs",
+    "check": "tsc --noEmit --skipLibCheck",
+    "test": "node test-link-ops.mjs"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "builtin-modules": "^4.0.0",
-    "esbuild": "^0.25.0",
-    "obsidian": "latest",
-    "typescript": "^5.8.0"
+    "@codemirror/state": "6.5.0",
+    "@codemirror/view": "6.38.6",
+    "@types/node": "22.19.17",
+    "obsidian": "1.13.1",
+    "typescript": "5.8.3"
   },
   "author": "GitHubDes",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
 }

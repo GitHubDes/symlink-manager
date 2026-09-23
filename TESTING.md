@@ -16,13 +16,14 @@
 ## File-link behaviour
 
 1. Confirm the file symlink appears in Obsidian's File Explorer and receives the link decoration.
-2. Right-click the linked file and confirm **Show link target**, **Open target in default app**, and **Remove link…** appear.
+2. Right-click the linked file and confirm **Show link target**, **Show link target in system folder**, and **Remove link…** appear.
 3. Confirm **Create link here…** does not appear on a file.
 4. Confirm **Open vault** does not appear on a file link.
 5. **Show link target** should report the resolved target file.
-6. **Open target in default app** should open the target file using the operating system default application.
+6. **Show link target in system folder** should open the operating system file explorer at the target location and reveal/select the target file.
 7. Open/edit the linked file normally in Obsidian and confirm changes affect the target file.
-8. Remove the link and confirm no reload occurs and the target file remains unchanged.
+8. Confirm Obsidian’s own **Open in default app** command opens the linked file with the operating system’s associated application.
+9. Remove the link and confirm no reload occurs and the target file remains unchanged.
 
 ## Folder/junction regression
 
@@ -42,4 +43,4 @@
 
 ## Known Obsidian behaviour
 
-On the tested Windows setup, Markdown file symlinks render normally in Obsidian. Symlinks to some non-Markdown file types (for example PDF or image files) may be recognised by Obsidian but not rendered correctly; **Open target in default app** remains the appropriate fallback.
+On the tested Windows setup, Markdown file symlinks render normally in Obsidian. Symlinks to some non-Markdown file types (for example PDF or image files) may be recognised by Obsidian but not rendered correctly; **Show link target in system folder** remains the appropriate fallback for locating the real target file.
