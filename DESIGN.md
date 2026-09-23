@@ -82,9 +82,9 @@ Windows symbolic links may require Developer Mode or elevated permissions. Permi
 - `refresh.ts`: the creation-time reload mechanism.
 - `styles.css`: link badges and dialog styling.
 - `build.mjs`: transpiles and combines the TypeScript sources into `main.js`.
-- `test-link-ops.mjs`: standalone directory-link filesystem checks.
+- `test-link-ops.mjs`: standalone file- and directory-link filesystem checks.
 
-`npm run check` performs TypeScript checking separately from `npm run build`. The generated `main.js` is ignored by Git. `esbuild.config.mjs` is a legacy configuration and is not used by the current build script.
+`npm run check` performs TypeScript checking separately from `npm run build`. The generated `main.js` is ignored by Git.
 
 See [TESTING.md](TESTING.md) for automated coverage and manual integration checks, and [CHANGELOG.md](CHANGELOG.md) for release history.
 
@@ -95,3 +95,24 @@ See [TESTING.md](TESTING.md) for automated coverage and manual integration check
 - Add distinct visual treatment for broken links; target inspection already reports missing targets.
 - Extend vault detection where demonstrated needs justify it.
 - Add settings or linked-vault features only where they address concrete workflows.
+
+## Future considerations
+
+### File Explorer badge performance
+
+The current badge decorator checks Explorer rows attached to the DOM when relevant UI mutations occur. No performance issue has been observed in normal use.
+
+If performance becomes noticeable with large Explorer trees, investigate reducing filesystem work during decoration and limiting unnecessary rescans. Any optimisation should preserve reliable detection of file symlinks, directory symlinks, and Windows junctions, and avoid unnecessary dependence on Obsidian's undocumented DOM rendering behaviour.
+
+Do not optimise this path without evidence of an actual performance problem.
+
+## Compatibility considerations
+
+Some functionality depends on implementation details outside Obsidian's documented public plugin API:
+
+- Opening a linked Obsidian vault uses Electron's internal `vault-open` IPC channel.
+- File Explorer link badges depend on Obsidian's current File Explorer DOM structure and selectors.
+
+These integrations are intentionally kept narrow. They should be rechecked when testing against significant new Obsidian releases.
+
+If either integration stops working, prefer a supported public API if Obsidian provides one at that time rather than increasing dependence on additional internal behaviour.

@@ -10,9 +10,9 @@ npm run build
 npm test
 ```
 
-The checks respectively validate TypeScript types, generate `main.js`, and exercise standalone Node filesystem operations. The filesystem test covers directory symbolic links and, on Windows, directory junctions: creation, detection, target resolution, duplicate-name rejection, removal and preservation of target contents. It requires permission to create the relevant links.
+The checks respectively validate TypeScript types, generate `main.js`, and exercise standalone Node filesystem operations. The filesystem test covers file and directory symbolic links and, on Windows, directory junctions: creation, detection, target resolution, duplicate-name rejection, removal and preservation of target contents. It requires permission to create the relevant links.
 
-The automated test does not exercise the plugin implementation, file symbolic links, broken links, dialogs, context menus, decoration or reload behaviour. The following manual checks cover Obsidian integration; they are a test plan, not a record of a completed test run.
+The automated test does not exercise the plugin implementation, broken links, dialogs, context menus, decoration or reload behaviour. The following manual checks cover Obsidian integration; they are a test plan, not a record of a completed test run.
 
 ## Root creation
 

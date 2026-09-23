@@ -11,13 +11,18 @@ async function verifyLink(type) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'symlink-manager-v2-'));
   const target = path.join(root, 'target');
   const link = path.join(root, type === 'junction' ? 'junction-link' : 'symlink-link');
-  await fs.mkdir(target);
-  await fs.writeFile(path.join(target, 'keep.txt'), 'keep');
+  const targetFile = type === 'file' ? target : path.join(target, 'keep.txt');
+  if (type !== 'file') await fs.mkdir(target);
+  await fs.writeFile(targetFile, 'keep');
 
   await fs.symlink(target, link, type);
   const stat = await fs.lstat(link);
   assert.equal(stat.isSymbolicLink(), true, `${type}: lstat must identify link`);
   assert.equal(path.resolve(await fs.realpath(link)), path.resolve(target), `${type}: target resolution`);
+  if (type === 'file') {
+    assert.equal((await fs.stat(link)).isFile(), true, 'file: link resolves to a file');
+    assert.equal(await fs.readFile(link, 'utf8'), 'keep', 'file: target content accessible through link');
+  }
 
   let collision = false;
   try { await fs.symlink(target, link, type); } catch (e) { collision = e?.code === 'EEXIST'; }
@@ -25,16 +30,18 @@ async function verifyLink(type) {
 
   await fs.unlink(link);
   assert.equal(await exists(link), false, `${type}: link removed`);
-  assert.equal(await exists(path.join(target, 'keep.txt')), true, `${type}: target contents preserved`);
+  assert.equal(await exists(targetFile), true, `${type}: target file preserved`);
+  assert.equal(await fs.readFile(targetFile, 'utf8'), 'keep', `${type}: target contents preserved`);
 
   await fs.rm(root, { recursive: true, force: true });
 }
 
 await verifyLink('dir');
+await verifyLink('file');
 if (process.platform === 'win32') {
   await verifyLink('junction');
-  console.log('PASS: symbolic-link and Windows junction create/detect/resolve/collision/remove safety tests');
+  console.log('PASS: file/directory symbolic-link and Windows junction create/detect/resolve/collision/remove safety tests');
 } else {
-  console.log('PASS: symbolic-link create/detect/resolve/collision/remove safety tests');
+  console.log('PASS: file/directory symbolic-link create/detect/resolve/collision/remove safety tests');
   console.log('SKIP: true Windows junction test requires Windows');
 }
