@@ -2,6 +2,14 @@
 
 Symlink Manager brings filesystem symbolic links into Obsidian's File Explorer on desktop. Link folders or individual files into a vault, jump directly to another linked Obsidian vault, and manage links without deleting their targets.
 
+## Simple to use
+
+Symlink Manager is designed to make filesystem links feel like a natural part of Obsidian. You do not need to use the command line or create links manually.
+
+Right-click where you want the link, choose the target file or directory, and Symlink Manager creates the link and refreshes Obsidian for you. Existing links are managed in the same way: right-click a link to view its target, reveal it in the system file explorer, open a linked vault, or remove the link safely.
+
+The filesystem details and extra commands stay out of the way, while the links themselves remain standard operating-system links.
+
 ## Highlights
 
 - **Link Obsidian vaults into a larger workspace.** A linked vault can be used from the parent almost as though it were part of that vault: open and edit its notes, manage its files and folders, and even move files across vault boundaries using Obsidian normally. When you want to work with the linked vault independently, right-click it and choose **Open vault**; Obsidian opens or focuses it while leaving the current vault open.
@@ -68,6 +76,14 @@ These are Obsidian-side rendering/file-access behaviours rather than different k
 ### Duplicate and overlapping directory targets
 
 Obsidian may hide duplicate or overlapping linked trees when the same directory or vault is linked into multiple places. Symlink Manager does not attempt to bypass Obsidian's handling of overlapping symlink targets.
+
+### Syncing vaults containing links
+
+Filesystem links are local to the computer on which they are created. Sync services such as **Obsidian Sync, Google Drive, iCloud and Dropbox generally do not reproduce filesystem links on other devices**.
+
+If a vault containing links is synced to another device, do not assume that the links—or content reached through them—will be available there. Links may need to be recreated separately on each device.
+
+Symlink Manager does not synchronise or recreate links between devices.
 
 ## Refresh behaviour
 
