@@ -70,7 +70,7 @@ class CreateSymlinkModal extends Modal {
       .setName(this.isDirectory ? "Target folder" : "Target file")
       .setDesc(`Choose a ${this.isDirectory ? "folder" : "file"}, or enter its absolute filesystem path.`)
       .addText((text) => {
-        text.inputEl.addClass("symlink-manager-target-input");
+        text.inputEl.addClass("easy-symlinker-target-input");
         text.setPlaceholder(this.isDirectory ? "C:\\path\\to\\folder or /home/user/folder" : "C:\\path\\to\\file.ext or /home/user/file.ext");
         text.setValue(this.targetPath);
         text.onChange((value) => this.setTargetPath(value.trim(), false));
@@ -111,7 +111,7 @@ class CreateSymlinkModal extends Modal {
       .setDesc("Name shown inside the current vault.");
 
     nameSetting.addText((text) => {
-      text.inputEl.addClass("symlink-manager-name-input");
+      text.inputEl.addClass("easy-symlinker-name-input");
       text.setPlaceholder(this.isDirectory ? "Folder name" : "File name");
       text.setValue(this.linkName);
       text.onChange((value) => {
@@ -164,7 +164,7 @@ class CreateSymlinkModal extends Modal {
 
   private setTargetPath(value: string, fromPicker: boolean): void {
     this.targetPath = value.trim();
-    const targetInput = this.contentEl.querySelector<HTMLInputElement>(".symlink-manager-target-input");
+    const targetInput = this.contentEl.querySelector<HTMLInputElement>(".easy-symlinker-target-input");
     if (targetInput && targetInput.value !== this.targetPath) targetInput.value = this.targetPath;
     const trimmed = this.targetPath.replace(/[\\/]+$/, "");
     if (trimmed && (fromPicker || !this.linkName)) {
@@ -174,7 +174,7 @@ class CreateSymlinkModal extends Modal {
   }
 
   private refreshNameInput(): void {
-    const input = this.contentEl.querySelector<HTMLInputElement>(".symlink-manager-name-input");
+    const input = this.contentEl.querySelector<HTMLInputElement>(".easy-symlinker-name-input");
     if (input && document.activeElement !== input) input.value = this.linkName;
   }
 
@@ -200,7 +200,7 @@ class TargetInfoModal extends Modal {
     contentEl.createEl("h2", { text: "Link target" });
     contentEl.createEl("p", { text: `Link: ${this.linkVaultPath}` });
     contentEl.createEl("p", { text: "Target:" });
-    contentEl.createEl("div", { text: this.targetPath, cls: "symlink-manager-target-path" });
+    contentEl.createEl("div", { text: this.targetPath, cls: "easy-symlinker-target-path" });
     contentEl.createEl("p", { text: `Target exists: ${this.targetExists ? "Yes" : "No"}` });
     contentEl.createEl("p", { text: `Obsidian vault: ${this.isVault ? "Yes" : "No"}` });
   }
@@ -225,10 +225,10 @@ class ConfirmRemoveModal extends Modal {
     contentEl.createEl("h2", { text: `Remove link “${nodePath.basename(this.vaultPath)}”?` });
     contentEl.createEl("p", {
       text: "Only the filesystem link will be removed. The target will not be changed.",
-      cls: "symlink-manager-warning",
+      cls: "easy-symlinker-warning",
     });
     contentEl.createEl("p", { text: "Target:" });
-    contentEl.createEl("div", { text: this.targetPath, cls: "symlink-manager-target-path" });
+    contentEl.createEl("div", { text: this.targetPath, cls: "easy-symlinker-target-path" });
 
     new Setting(contentEl)
       .addButton((button) => button.setButtonText("Cancel").onClick(() => this.close()))
@@ -281,7 +281,7 @@ export default class SymlinkManagerPlugin extends Plugin {
     this.observer?.disconnect();
     this.observer = null;
     if (this.decorateTimer !== null) window.clearTimeout(this.decorateTimer);
-    document.querySelectorAll(".symlink-manager-link-badge").forEach((el) => el.remove());
+    document.querySelectorAll(".easy-symlinker-link-badge").forEach((el) => el.remove());
   }
 
   private addFileMenuItems(menu: Menu, file: TAbstractFile): void {
@@ -566,7 +566,7 @@ export default class SymlinkManagerPlugin extends Plugin {
       const vaultPath = title.dataset.path;
       if (!vaultPath) continue;
 
-      const existing = title.querySelector<HTMLElement>(".symlink-manager-link-badge");
+      const existing = title.querySelector<HTMLElement>(".easy-symlinker-link-badge");
       const link = this.getLinkInfoSync(vaultPath).isLink;
       if (!link) {
         existing?.remove();
@@ -575,7 +575,7 @@ export default class SymlinkManagerPlugin extends Plugin {
 
       if (existing) continue;
       const badge = document.createElement("span");
-      badge.addClass("symlink-manager-link-badge");
+      badge.addClass("easy-symlinker-link-badge");
       badge.setAttribute("aria-label", "Filesystem link");
       setIcon(badge, "link-2");
       const titleContent = title.querySelector<HTMLElement>(".nav-file-title-content, .nav-folder-title-content");

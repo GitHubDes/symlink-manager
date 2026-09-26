@@ -8,7 +8,7 @@ async function exists(p) {
 }
 
 async function verifyLink(type) {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'symlink-manager-v2-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'easy-symlinker-v2-'));
   const target = path.join(root, 'target');
   const link = path.join(root, type === 'junction' ? 'junction-link' : 'symlink-link');
   const targetFile = type === 'file' ? target : path.join(target, 'keep.txt');

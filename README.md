@@ -108,7 +108,7 @@ The behaviour described above has been tested primarily on Windows. File symlink
 For a manual installation, place `main.js`, `manifest.json`, and `styles.css` from the GitHub release in:
 
 ```text
-<Vault>/.obsidian/plugins/symlink-manager/
+<Vault>/.obsidian/plugins/easy-symlinker/
 ```
 
 Restart or reload Obsidian, then enable **Easy Symlinker** under **Settings → Community plugins**.
@@ -124,7 +124,7 @@ npm run build
 
 The build generates a minified production `main.js`, which is not committed to the repository. See [TESTING.md](TESTING.md) for type checking and automated/manual verification, [DESIGN.md](DESIGN.md) for the implementation reference, and [CHANGELOG.md](CHANGELOG.md) for release history.
 
-GitHub Actions runs a clean build on Windows with Node.js 24 for pushes to `main`, pull requests targeting `main`, and manual runs. After a successful run, download the `symlink-manager-<commit SHA>` artifact from the **Actions → Build** run page. It contains `main.js`, `manifest.json`, and `styles.css` and is retained for 30 days for testing and release preparation. GitHub Release assets remain the published distribution; this workflow does not publish or modify releases.
+GitHub Actions runs a clean build on Windows with Node.js 24 for pushes to `main`, pull requests targeting `main`, and manual runs. After a successful run, download the `easy-symlinker-<commit SHA>` artifact from the **Actions → Build** run page. It contains `main.js`, `manifest.json`, and `styles.css` and is retained for 30 days for testing and release preparation. GitHub Release assets remain the published distribution; this workflow does not publish or modify releases.
 
 ## Development
 
