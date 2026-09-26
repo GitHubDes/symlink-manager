@@ -1,12 +1,12 @@
-# Symlink Manager
+# Easy Symlinker
 
-Symlink Manager brings filesystem symbolic links into Obsidian's File Explorer on desktop. Link folders or individual files into a vault, jump directly to another linked Obsidian vault, and manage links without deleting their targets.
+Easy Symlinker brings filesystem symbolic links into Obsidian's File Explorer on desktop. Link folders or individual files into a vault, jump directly to another linked Obsidian vault, and manage links without deleting their targets.
 
 ## Simple to use
 
-Symlink Manager is designed to make filesystem links feel like a natural part of Obsidian. You do not need to use the command line or create links manually.
+Easy Symlinker is designed to make filesystem links feel like a natural part of Obsidian. You do not need to use the command line or create links manually.
 
-Right-click where you want the link, choose the target file or directory, and Symlink Manager creates the link and refreshes Obsidian for you. Existing links are managed in the same way: right-click a link to view its target, reveal it in the system file explorer, open a linked vault, or remove the link safely.
+Right-click where you want the link, choose the target file or directory, and Easy Symlinker creates the link and refreshes Obsidian for you. Existing links are managed in the same way: right-click a link to view its target, reveal it in the system file explorer, open a linked vault, or remove the link safely.
 
 The filesystem details and extra commands stay out of the way, while the links themselves remain standard operating-system links.
 
@@ -20,9 +20,9 @@ The filesystem details and extra commands stay out of the way, while the links t
 - Reveal linked file targets in the operating system file explorer.
 - Visually identify linked items in the File Explorer.
 
-## Using Symlink Manager
+## Using Easy Symlinker
 
-Symlink Manager works from the **right-click context menus in Obsidian's File Explorer**.
+Easy Symlinker works from the **right-click context menus in Obsidian's File Explorer**.
 
 Right-click a folder to create a link. To create at the vault root, use **Create link in vault root** in the Command Palette, or right-click empty File Explorer space if Obsidian exposes the root context menu there. Choose whether the target is a **directory** or a **file**, then select the target or enter its absolute path. On Windows, directory targets can also be created as junctions.
 
@@ -30,9 +30,9 @@ Right-click an existing link for actions appropriate to that link. These include
 
 ### Open vault
 
-A directory symlink can point at the root of another Obsidian vault. When Symlink Manager recognises that target as a vault, **Open vault** appears in the link's context menu.
+A directory symlink can point at the root of another Obsidian vault. When Easy Symlinker recognises that target as a vault, **Open vault** appears in the link's context menu.
 
-This provides a simple way to keep links to related vaults in the File Explorer and move between them without first finding the vault in Obsidian's vault switcher. The target is opened or focused by Obsidian. Symlink Manager does **not** close the vault you are currently using.
+This provides a simple way to keep links to related vaults in the File Explorer and move between them without first finding the vault in Obsidian's vault switcher. The target is opened or focused by Obsidian. Easy Symlinker does **not** close the vault you are currently using.
 
 More importantly, linking another vault does more than provide a shortcut to it. Once Obsidian accepts the linked tree, **it effectively treats that tree as part of the parent vault's file tree**.
 
@@ -40,15 +40,15 @@ From the parent vault you can open and edit Markdown notes in the linked vault, 
 
 This allows separately maintained vaults to behave like components of a larger workspace when that is useful, while each linked vault remains physically separate on disk and can still be opened independently with its own Obsidian configuration.
 
-When you want to work with the linked vault as a vault in its own right, right-click the link and choose **Open vault**. Obsidian opens or focuses the target vault without Symlink Manager closing the parent.
+When you want to work with the linked vault as a vault in its own right, right-click the link and choose **Open vault**. Obsidian opens or focuses the target vault without Easy Symlinker closing the parent.
 
 In short: **work with the linked content as part of the parent vault when you want to, and open the same content as its own vault when you want to.**
 
-There are limits to this integration. Obsidian decides how linked and overlapping trees are indexed and displayed, and behaviour can vary by platform and Obsidian version. Symlink Manager does not merge the two vault configurations or turn them into one physical vault.
+There are limits to this integration. Obsidian decides how linked and overlapping trees are indexed and displayed, and behaviour can vary by platform and Obsidian version. Easy Symlinker does not merge the two vault configurations or turn them into one physical vault.
 
 ### Linked Markdown files
 
-Symlink Manager can create symbolic links to individual files as well as directories. A particularly useful case is a `.md` file stored elsewhere on the computer but wanted inside an Obsidian vault without maintaining another copy.
+Easy Symlinker can create symbolic links to individual files as well as directories. A particularly useful case is a `.md` file stored elsewhere on the computer but wanted inside an Obsidian vault without maintaining another copy.
 
 In our Windows testing, Obsidian follows symlinks to Markdown files correctly: the linked note opens and renders normally. Editing the note through the link edits the target file because the link and target are the same filesystem content, not copies.
 
@@ -56,7 +56,7 @@ For linked files, Obsidian’s own **Open in default app** command can be used t
 
 ## Obsidian and symlinks: important behaviour
 
-Symbolic links are provided by the operating system, but what Obsidian does with a linked item depends on Obsidian's own file handling. Symlink Manager creates and manages the filesystem link; it cannot make every Obsidian viewer treat that link in the same way.
+Symbolic links are provided by the operating system, but what Obsidian does with a linked item depends on Obsidian's own file handling. Easy Symlinker creates and manages the filesystem link; it cannot make every Obsidian viewer treat that link in the same way.
 
 The following behaviour has been observed during Windows testing of this release:
 
@@ -71,11 +71,11 @@ The following behaviour has been observed during Windows testing of this release
 
 For example, a symlink named as a PDF may cause Obsidian to start its PDF viewer but display no pages. This does **not** mean the symbolic link is invalid. **Show link target in system folder** can reveal the real target file so it can be opened directly with the operating system if needed. Similar behaviour can occur with images and other non-Markdown resources.
 
-These are Obsidian-side rendering/file-access behaviours rather than different kinds of links created by Symlink Manager. Behaviour may differ between Obsidian versions and between Windows, macOS and Linux, so non-Windows results are welcome.
+These are Obsidian-side rendering/file-access behaviours rather than different kinds of links created by Easy Symlinker. Behaviour may differ between Obsidian versions and between Windows, macOS and Linux, so non-Windows results are welcome.
 
 ### Duplicate and overlapping directory targets
 
-Obsidian may hide duplicate or overlapping linked trees when the same directory or vault is linked into multiple places. Symlink Manager does not attempt to bypass Obsidian's handling of overlapping symlink targets.
+Obsidian may hide duplicate or overlapping linked trees when the same directory or vault is linked into multiple places. Easy Symlinker does not attempt to bypass Obsidian's handling of overlapping symlink targets.
 
 ### Syncing vaults containing links
 
@@ -83,21 +83,21 @@ Filesystem links are local to the computer on which they are created. Sync servi
 
 If a vault containing links is synced to another device, do not assume that the links—or content reached through them—will be available there. Links may need to be recreated separately on each device.
 
-Symlink Manager does not synchronise or recreate links between devices.
+Easy Symlinker does not synchronise or recreate links between devices.
 
 ## Refresh behaviour
 
-After **creating** a symbolic link or junction, Symlink Manager reloads the Obsidian app window so Obsidian fully discovers the newly linked item/tree. This is currently a workaround for Obsidian's vault refresh behaviour. **Removing a link does not require or trigger this reload.**
+After **creating** a symbolic link or junction, Easy Symlinker reloads the Obsidian app window so Obsidian fully discovers the newly linked item/tree. This is currently a workaround for Obsidian's vault refresh behaviour. **Removing a link does not require or trigger this reload.**
 
 ## Safety
 
-Removing a link removes the link itself, **not its target**. Symlink Manager also prevents creation where a file or directory with the requested link name already exists.
+Removing a link removes the link itself, **not its target**. Easy Symlinker also prevents creation where a file or directory with the requested link name already exists.
 
 The plugin intentionally accesses filesystem paths outside the current vault when you choose a link target. It does so only to perform the link operation you requested, resolve/manage the target, open it in the operating system, or open a linked Obsidian vault. It does not send file paths or file contents over the network.
 
 ## Platform support
 
-Symlink Manager is desktop-only because it uses Node.js and Electron filesystem APIs. Symbolic links are supported on Windows, macOS and Linux subject to operating-system permissions. Windows users can also choose directory junctions.
+Easy Symlinker is desktop-only because it uses Node.js and Electron filesystem APIs. Symbolic links are supported on Windows, macOS and Linux subject to operating-system permissions. Windows users can also choose directory junctions.
 
 On Windows, creating symbolic links may require Developer Mode or elevated permissions. Junctions generally avoid that requirement.
 
@@ -111,7 +111,7 @@ For a manual installation, place `main.js`, `manifest.json`, and `styles.css` fr
 <Vault>/.obsidian/plugins/symlink-manager/
 ```
 
-Restart or reload Obsidian, then enable **Symlink Manager** under **Settings → Community plugins**.
+Restart or reload Obsidian, then enable **Easy Symlinker** under **Settings → Community plugins**.
 
 ## Building from source
 
@@ -128,7 +128,7 @@ GitHub Actions runs a clean build on Windows with Node.js 24 for pushes to `main
 
 ## Development
 
-Symlink Manager was developed collaboratively with the assistance of ChatGPT. ChatGPT was used for implementation, debugging and documentation, while the plugin was iteratively tested and validated through hands-on use in Obsidian.
+Easy Symlinker was developed collaboratively with the assistance of ChatGPT. ChatGPT was used for implementation, debugging and documentation, while the plugin was iteratively tested and validated through hands-on use in Obsidian.
 
 ## License
 

@@ -1,4 +1,4 @@
-# Symlink Manager 1.1.1 testing
+# Easy Symlinker 1.1.1 testing
 
 ## Automated checks
 

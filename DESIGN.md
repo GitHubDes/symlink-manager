@@ -1,8 +1,8 @@
-# Symlink Manager — Design Reference
+# Easy Symlinker — Design Reference
 
 ## Project status
 
-This document describes release **1.1.1**. Symlink Manager is a desktop-only Obsidian plugin for creating, recognising and managing file and directory symbolic links, Windows directory junctions, and linked Obsidian vaults.
+This document describes release **1.1.1**. Easy Symlinker is a desktop-only Obsidian plugin for creating, recognising and managing file and directory symbolic links, Windows directory junctions, and linked Obsidian vaults.
 
 The filesystem is the source of truth. The plugin keeps no database of links. Obsidian handles browsing, indexing and editing the content exposed through those links.
 

@@ -258,7 +258,7 @@ export default class SymlinkManagerPlugin extends Plugin {
 
   async onload(): Promise<void> {
     if (!(this.app.vault.adapter instanceof FileSystemAdapter)) {
-      new Notice("Symlink Manager requires Obsidian Desktop with a filesystem-backed vault.");
+      new Notice("Easy Symlinker requires Obsidian Desktop with a filesystem-backed vault.");
       return;
     }
 
@@ -413,7 +413,7 @@ export default class SymlinkManagerPlugin extends Plugin {
   }
 
   reportError(prefix: string, error: unknown): void {
-    console.error("Symlink Manager:", prefix, error);
+    console.error("Easy Symlinker:", prefix, error);
     const code = this.errorCode(error);
     if (code === "EPERM" || code === "EACCES") {
       const message = process.platform === "win32"
