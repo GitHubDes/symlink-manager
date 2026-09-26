@@ -33,16 +33,34 @@ function transpile(fileName, source) {
 }
 
 const refreshSource = await readFile("refresh.ts", "utf8");
+const electronCompatSource = await readFile("electron-compat.ts", "utf8");
 const mainSource = await readFile("main.ts", "utf8");
 const refreshJs = transpile("refresh.ts", refreshSource);
+const electronCompatJs = transpile("electron-compat.ts", electronCompatSource);
 let mainJs = transpile("main.ts", mainSource);
 
 const localImportPatterns = [
+  /const electron_compat_1 = require\("\.\/electron-compat"\);/,
+  /var electron_compat_1 = require\("\.\/electron-compat"\);/,
+];
+let compatReplaced = false;
+for (const pattern of localImportPatterns) {
+  if (pattern.test(mainJs)) {
+    mainJs = mainJs.replace(pattern, "const electron_compat_1 = __electronCompatModule;");
+    compatReplaced = true;
+    break;
+  }
+}
+if (!compatReplaced) {
+  throw new Error("Could not locate compiled ./electron-compat import in main.ts output.");
+}
+
+const refreshImportPatterns = [
   /const refresh_1 = require\("\.\/refresh"\);/,
   /var refresh_1 = require\("\.\/refresh"\);/,
 ];
 let replaced = false;
-for (const pattern of localImportPatterns) {
+for (const pattern of refreshImportPatterns) {
   if (pattern.test(mainJs)) {
     mainJs = mainJs.replace(pattern, "const refresh_1 = __refreshModule;");
     replaced = true;
@@ -53,8 +71,8 @@ if (!replaced) {
   throw new Error("Could not locate compiled ./refresh import in main.ts output.");
 }
 
-const banner = "// GENERATED FILE - built from main.ts and refresh.ts by build.mjs. Do not edit directly.\n";
-const bundled = `${banner}const __refreshModule = {};\n(function(exports) {\n${refreshJs}\n})(__refreshModule);\n${mainJs}`;
+const banner = "// GENERATED FILE - built from main.ts, electron-compat.ts, and refresh.ts by build.mjs. Do not edit directly.\n";
+const bundled = `${banner}const __electronCompatModule = {};\n(function(exports) {\n${electronCompatJs}\n})(__electronCompatModule);\nconst __refreshModule = {};\n(function(exports) {\n${refreshJs}\n})(__refreshModule);\n${mainJs}`;
 // Preserve CommonJS exports and Obsidian API property names. Terser's unsafe
 // compression options remain disabled; only local identifiers are mangled.
 const result = await minify(bundled, {

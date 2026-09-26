@@ -12,6 +12,7 @@ import {
 import { promises as fs, lstatSync, readlinkSync, realpathSync, statSync } from "fs";
 import * as nodePath from "path";
 import { ipcRenderer, shell } from "electron";
+import { loadElectronRemote } from "./electron-compat";
 import { refreshAfterExternalLinkChange } from "./refresh";
 
 type LinkCreationType = "symlink" | "junction";
@@ -79,15 +80,7 @@ class CreateSymlinkModal extends Modal {
         const kind = this.isDirectory ? "folder" : "file";
         button.setButtonText("Browse…").setTooltip(`Choose target ${kind}`).onClick(async () => {
           try {
-            // `dialog` is a main-process Electron API. Obsidian exposes it to
-            // desktop plugins through @electron/remote (with electron.remote as
-            // a compatibility fallback on older desktop builds).
-            let remote: any;
-            try {
-              remote = require("@electron/remote");
-            } catch {
-              remote = require("electron").remote;
-            }
+            const remote = loadElectronRemote();
             if (!remote?.dialog?.showOpenDialog) {
               throw new Error("Electron remote dialog API is unavailable");
             }
